@@ -39,7 +39,9 @@ async function request(url, options = {}) {
   })
   const data = await response.json().catch(() => ({}))
   if (!response.ok) {
-    const error = new Error(data.error || '요청에 실패했습니다.')
+    const error = new Error(data.error || (response.status === 404
+      ? '서버에 연결하지 못했습니다. 사이트를 다시 배포해 주세요.'
+      : '요청에 실패했습니다.'))
     error.status = response.status
     throw error
   }

@@ -11,9 +11,11 @@
     "test": "node --test shared/*.test.js"
   },
   "dependencies": {
+    "@netlify/blobs": "^11.1.4",
     "express": "^4.21.2",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "serverless-http": "^4.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
