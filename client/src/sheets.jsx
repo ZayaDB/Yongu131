@@ -239,3 +239,63 @@ export function CrewSheet({ customer, staffName, onClose, onConfirm }) {
     </div>
   )
 }
+
+export function TeamSheet({ customer, onClose, onSave, onOpenEstimate }) {
+  const total = (Number(customer.crewMale) || 0) + (Number(customer.crewFemale) || 0)
+  const savedMembers = customer.team?.members || []
+  const slots = Math.max(savedMembers.length, Math.max(0, total - 1), 1)
+  const [leader, setLeader] = useState(customer.team?.leader || '')
+  const [members, setMembers] = useState(Array.from({ length: slots }, (_, index) => savedMembers[index] || ''))
+  const [pending, setPending] = useState(false)
+  const [error, setError] = useState('')
+
+  function setMember(index, value) {
+    setMembers((current) => current.map((name, item) => (item === index ? value : name)))
+  }
+
+  async function submit(event) {
+    event.preventDefault()
+    setPending(true)
+    setError('')
+    try {
+      await onSave({
+        leader: leader.trim(),
+        members: members.map((name) => name.trim()).filter(Boolean),
+      })
+    } catch (err) {
+      setError(err.message)
+      setPending(false)
+    }
+  }
+
+  return (
+    <div className="backdrop" onClick={onClose}>
+      <form className="sheet" onClick={(event) => event.stopPropagation()} onSubmit={submit}>
+        <p className="kicker">{customer.name} · {customer.crewMale}:{customer.crewFemale}</p>
+        <h2>팀원 이름</h2>
+        <p className="lead">남자 {customer.crewMale}명, 여자 {customer.crewFemale}명입니다. 팀장과 같이 가는 직원 이름을 적으면 됩니다. 누구나 적을 수 있습니다.</p>
+        <Field label="팀장">
+          <input value={leader} onChange={(event) => setLeader(event.target.value)} maxLength={20} autoFocus placeholder="팀장 이름" />
+        </Field>
+        {members.map((name, index) => (
+          <div className="member-row" key={index}>
+            <Field label={index === 0 ? '직원' : `직원 ${index + 1}`}>
+              <input value={name} onChange={(event) => setMember(index, event.target.value)} maxLength={20} placeholder="직원 이름" />
+            </Field>
+            {members.length > 1 && (
+              <button type="button" className="text-btn" onClick={() => setMembers((current) => current.filter((_, item) => item !== index))}>빼기</button>
+            )}
+          </div>
+        ))}
+        {members.length < 16 && (
+          <button type="button" className="btn btn-ghost btn-block" onClick={() => setMembers((current) => [...current, ''])}>직원 추가</button>
+        )}
+        {error && <p className="form-error">{error}</p>}
+        <div className="sheet-actions">
+          <button type="button" className="btn btn-ghost" onClick={onOpenEstimate}>견적 보기</button>
+          <button type="submit" className="btn btn-primary" disabled={pending}>{pending ? '저장 중' : '이름 저장'}</button>
+        </div>
+      </form>
+    </div>
+  )
+}

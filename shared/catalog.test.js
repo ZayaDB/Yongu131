@@ -63,3 +63,12 @@ test('고객 저장값은 이름과 인원을 정리한다', () => {
   assert.equal(saved.crewMale, 3)
   assert.equal(saved.status, '확정')
 })
+
+test('팀 이름은 팀장과 직원만 남긴다', () => {
+  const saved = sanitizeCustomer({
+    name: '정하늘',
+    team: { leader: '  박팀장 ', members: [' 홍길동 ', '', '김철수'] },
+  })
+  assert.equal(saved.team.leader, '박팀장')
+  assert.deepEqual(saved.team.members, ['홍길동', '김철수'])
+})

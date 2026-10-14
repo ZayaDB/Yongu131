@@ -53,6 +53,7 @@ export const api = {
   bootstrap: () => request('/api/bootstrap'),
   createCustomer: (body) => request('/api/customers', { method: 'POST', body }),
   updateCustomer: (id, body) => request(`/api/customers/${id}`, { method: 'PUT', body }),
+  saveTeam: (id, body) => request(`/api/customers/${id}/team`, { method: 'PUT', body }),
   removeCustomer: (id) => request(`/api/customers/${id}`, { method: 'DELETE' }),
   messages: () => request('/api/messages'),
   sendMessage: (body) => request('/api/messages', { method: 'POST', body }),

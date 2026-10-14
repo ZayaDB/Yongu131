@@ -70,6 +70,7 @@ export function blankCustomer(partial = {}) {
     pyeong: '',
     crewMale: 0,
     crewFemale: 0,
+    team: { leader: '', members: [] },
     inventory: {},
     customItems: [],
     quotedTon: null,
@@ -99,7 +100,20 @@ export function blankCustomer(partial = {}) {
     promises: { ...base.promises, ...(partial.promises || {}) },
     inventory: { ...(partial.inventory || {}) },
     customItems: partial.customItems || [],
+    team: {
+      leader: partial.team?.leader || '',
+      members: Array.isArray(partial.team?.members) ? partial.team.members : [],
+    },
   }
+}
+
+export function sanitizeTeam(team) {
+  const leader = String(team?.leader || '').trim().slice(0, 20)
+  const members = (Array.isArray(team?.members) ? team.members : [])
+    .map((name) => String(name || '').trim().slice(0, 20))
+    .filter(Boolean)
+    .slice(0, 16)
+  return { leader, members }
 }
 
 export function quoteTotals(pricing = {}) {
@@ -160,6 +174,7 @@ export function sanitizeCustomer(input = {}, prev) {
   customer.pyeong = String(customer.pyeong || '').trim().slice(0, 6)
   customer.crewMale = clamp(customer.crewMale, 0, 20)
   customer.crewFemale = clamp(customer.crewFemale, 0, 20)
+  customer.team = sanitizeTeam(customer.team)
   if (!STATUSES.includes(customer.status)) customer.status = '견적'
   if (!SLOTS.includes(customer.timeSlot)) customer.timeSlot = '오전'
   if (!HOUSE_TYPES.includes(customer.houseType)) customer.houseType = '아파트'

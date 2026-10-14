@@ -3,7 +3,7 @@ import { calcLoad } from '../../../shared/catalog.js'
 import { todayYmd } from '../../../shared/model.js'
 import { useApp } from '../context.jsx'
 import { calendarMarks, koreanDate, markLabel, parseYmd, SLOT_ORDER } from '../format.js'
-import { Ratio, Status } from '../components.jsx'
+import { Ratio, Status, TeamLine } from '../components.jsx'
 
 export function TodayScreen({ onOpen, onCreate, onCalendar }) {
   const { customers, canEdit, codes } = useApp()
@@ -106,6 +106,7 @@ function JobCard({ mark, load, onOpen, showDate = false }) {
         <p className="meta">
           {[showDate ? mark.date.slice(5).replace('-', '/') : '', markLabel(mark.type), customer.timeSlot, customer.pyeong ? `${customer.pyeong}평` : '', ton].filter(Boolean).join(' · ')}
         </p>
+        {mark.type === 'job' && <TeamLine team={customer.team} />}
       </div>
       {mark.type === 'job'
         ? <Ratio male={customer.crewMale} female={customer.crewFemale} />

@@ -3,8 +3,8 @@ import { todayYmd } from '../../../shared/model.js'
 import { api } from '../api.js'
 import { useApp } from '../context.jsx'
 import { calendarMarks, koreanDate, markLabel, monthTitle, parseYmd, SLOT_ORDER } from '../format.js'
-import { Ratio, Status } from '../components.jsx'
-import { CrewSheet } from '../sheets.jsx'
+import { Ratio, Status, TeamLine } from '../components.jsx'
+import { CrewSheet, TeamSheet } from '../sheets.jsx'
 
 const DOW = ['일', '월', '화', '수', '목', '금', '토']
 
@@ -15,6 +15,7 @@ export function CalendarScreen({ focusDate, staffName, onOpen, onCreate }) {
   const [cursor, setCursor] = useState({ year: start.getFullYear(), month: start.getMonth() })
   const [selected, setSelected] = useState(focusDate || today)
   const [crewFor, setCrewFor] = useState(null)
+  const [teamFor, setTeamFor] = useState(null)
 
   useEffect(() => {
     if (!focusDate) return
@@ -111,7 +112,7 @@ export function CalendarScreen({ focusDate, staffName, onOpen, onCreate }) {
           )
         }))}
       </div>
-      <p className="legend">3:1 은 남자 3명, 여자 1명입니다. 견적·방문은 아직 인원이 없습니다.</p>
+      <p className="legend">3:1 은 남자 3명, 여자 1명입니다. 그 숫자를 누르면 팀장과 직원 이름을 적습니다. 고객 이름을 누르면 견적입니다.</p>
 
       <section className="day-panel">
         <div className="section-row">
@@ -128,10 +129,11 @@ export function CalendarScreen({ focusDate, staffName, onOpen, onCreate }) {
                   <strong>{mark.customer.name}</strong>
                 </div>
                 <p className="meta">{[markLabel(mark.type), mark.customer.timeSlot, mark.customer.fromAddress].filter(Boolean).join(' · ')}</p>
+                {mark.type === 'job' && <TeamLine team={mark.customer.team} />}
               </button>
               <div className="person-side">
                 {mark.type === 'job'
-                  ? <Ratio male={mark.customer.crewMale} female={mark.customer.crewFemale} />
+                  ? <Ratio male={mark.customer.crewMale} female={mark.customer.crewFemale} onClick={() => setTeamFor(mark.customer)} />
                   : markLabel(mark.type) !== mark.customer.status && <span className="wait-pill">{markLabel(mark.type)}</span>}
                 {canEdit && mark.customer.status === '견적' && mark.type !== 'service' && (
                   <button type="button" className="text-btn" onClick={() => setCrewFor(mark.customer)}>인원 확정</button>
@@ -141,6 +143,23 @@ export function CalendarScreen({ focusDate, staffName, onOpen, onCreate }) {
           ))}
         </div>
       </section>
+
+      {teamFor && (
+        <TeamSheet
+          customer={teamFor}
+          onClose={() => setTeamFor(null)}
+          onOpenEstimate={() => {
+            const id = teamFor.id
+            setTeamFor(null)
+            onOpen(id, 'contract')
+          }}
+          onSave={async (team) => {
+            const saved = await api.saveTeam(teamFor.id, team)
+            saveCustomer(saved)
+            setTeamFor(null)
+          }}
+        />
+      )}
 
       {crewFor && (
         <CrewSheet

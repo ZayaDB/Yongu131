@@ -45,18 +45,40 @@ export function IconBack() {
   )
 }
 
+export function TeamLine({ team }) {
+  const leader = team?.leader || ''
+  const members = Array.isArray(team?.members) ? team.members : []
+  if (!leader && members.length === 0) return <p className="team-line muted">팀원 이름을 아직 안 적었습니다.</p>
+  return (
+    <p className="team-line">
+      {leader ? `팀장 ${leader}` : '팀장 미정'}
+      {members.length > 0 ? ` · ${members.join(', ')}` : ''}
+    </p>
+  )
+}
+
 export function Status({ value }) {
   return <span className={`status status-${value}`}>{value}</span>
 }
 
-export function Ratio({ male = 0, female = 0 }) {
+export function Ratio({ male = 0, female = 0, onClick }) {
   if (!male && !female) return <span className="unassigned">인원 미정</span>
+  const label = `남자 ${male}명, 여자 ${female}명. 팀원 이름 적기`
+  if (!onClick) {
+    return (
+      <div className="ratio" aria-label={`남자 ${male}명, 여자 ${female}명`}>
+        <div className="male"><b>{male}</b><small>남</small></div>
+        <i>:</i>
+        <div className="female"><b>{female}</b><small>여</small></div>
+      </div>
+    )
+  }
   return (
-    <div className="ratio" aria-label={`남자 ${male}명, 여자 ${female}명`}>
+    <button type="button" className="ratio" onClick={onClick} aria-label={label}>
       <div className="male"><b>{male}</b><small>남</small></div>
       <i>:</i>
       <div className="female"><b>{female}</b><small>여</small></div>
-    </div>
+    </button>
   )
 }
 

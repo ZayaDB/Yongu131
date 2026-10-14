@@ -1,6 +1,6 @@
 import express from 'express'
 import { readDb, updateDb } from './store.js'
-import { sanitizeCustomer } from '../shared/model.js'
+import { sanitizeCustomer, sanitizeTeam } from '../shared/model.js'
 import { roleFromCode } from '../shared/access.js'
 
 const app = express()
@@ -109,6 +109,26 @@ app.put('/api/customers/:id', requireStaff, requireEstimator, route(async (req, 
     db.customers[index] = saved
   })
   if (missing === 'name') return res.status(400).json({ error: '이름을 입력해 주세요.' })
+  if (missing || !saved) return res.status(404).json({ error: '고객을 찾을 수 없습니다.' })
+  res.json(saved)
+}))
+
+app.put('/api/customers/:id/team', requireStaff, route(async (req, res) => {
+  let saved = null
+  let missing = false
+  await updateDb((db) => {
+    const index = db.customers.findIndex((item) => item.id === req.params.id)
+    if (index < 0) {
+      missing = true
+      return
+    }
+    saved = {
+      ...db.customers[index],
+      team: sanitizeTeam(req.body),
+      updatedAt: new Date().toISOString(),
+    }
+    db.customers[index] = saved
+  })
   if (missing || !saved) return res.status(404).json({ error: '고객을 찾을 수 없습니다.' })
   res.json(saved)
 }))
