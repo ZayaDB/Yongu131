@@ -53,7 +53,7 @@ function writeFileDb(db) {
 }
 
 function blobStore() {
-  return getStore('jh-office', { consistency: 'strong' })
+  return getStore('jh-office')
 }
 
 async function readBlob() {
