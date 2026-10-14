@@ -29,6 +29,15 @@ function withApiPath(event) {
 }
 
 export const handler = async (event, context) => {
-  if (process.env.AWS_LAMBDA_FUNCTION_NAME) connectLambda(event)
-  return handle(withApiPath(event), context)
+  try {
+    if (event?.blobs) connectLambda(event)
+    return await handle(withApiPath(event), context)
+  } catch (error) {
+    console.error(error)
+    return {
+      statusCode: 500,
+      headers: { 'content-type': 'application/json; charset=utf-8' },
+      body: JSON.stringify({ error: '서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.' }),
+    }
+  }
 }

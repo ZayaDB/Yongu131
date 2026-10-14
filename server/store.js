@@ -4,9 +4,13 @@ import { fileURLToPath } from 'url'
 import { getStore } from '@netlify/blobs'
 import { DEFAULT_CODES } from '../shared/access.js'
 
-const root = path.dirname(fileURLToPath(import.meta.url))
-const file = path.join(root, 'data', 'db.json')
 const BLOB_KEY = 'db'
+
+function dbFile() {
+  const url = import.meta.url
+  if (typeof url !== 'string' || !url) return path.join(process.cwd(), 'server', 'data', 'db.json')
+  return path.join(path.dirname(fileURLToPath(url)), 'data', 'db.json')
+}
 
 function seed() {
   return {
@@ -33,7 +37,7 @@ export function usingBlobs() {
 
 function readFileDb() {
   try {
-    return JSON.parse(fs.readFileSync(file, 'utf8'))
+    return JSON.parse(fs.readFileSync(dbFile(), 'utf8'))
   } catch (error) {
     if (error.code === 'ENOENT') return null
     throw error
@@ -41,6 +45,7 @@ function readFileDb() {
 }
 
 function writeFileDb(db) {
+  const file = dbFile()
   fs.mkdirSync(path.dirname(file), { recursive: true })
   const tmp = `${file}.tmp`
   fs.writeFileSync(tmp, JSON.stringify(db, null, 2))
